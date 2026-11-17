@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Card from "@/components/Card";
-import { withTrackInfo } from "@/lib/tracks";
-
-interface Item {
-  id: string;
-  name?: string;
-  message?: string;
-  trackName?: string;
-  trackImage?: string;
-}
+import { withTrackInfo, type SubmissionWithTrack as Item } from "@/lib/tracks";
 
 const Carousel = () => {
   const [rows, setRows] = useState<Item[][]>([[], []]);
@@ -16,8 +8,9 @@ const Carousel = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/carousel-items?limit=30`);
+        const res = await fetch("/api/submissions/random?limit=30");
         const data = await res.json();
+        if (!res.ok || !Array.isArray(data)) throw new Error(`HTTP ${res.status}`);
 
         const enhanced = await withTrackInfo(data);
 

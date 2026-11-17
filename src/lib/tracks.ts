@@ -1,8 +1,8 @@
 export interface Submission {
-  id: string;
+  id: number;
   name?: string;
   message?: string;
-  track?: string;
+  track?: string | null;
 }
 
 export interface SubmissionWithTrack extends Submission {

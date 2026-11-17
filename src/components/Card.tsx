@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Music } from "lucide-react";
 
 interface CardProps {
-  id: string;
+  id: string | number;
   name?: string;
   message?: string;
   trackName?: string;

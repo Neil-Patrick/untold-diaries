@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import React from "react";
 import { debounce } from "lodash";
 
@@ -6,43 +6,63 @@ type CatYapperProps = {
   text: string;
 };
 
+// Shown while the message box is empty; no AI request needed for these.
+const IDLE_LINES = [
+  "😺 Hey hooman, type something... don't keep me waiting.",
+  "😼 I'm still here... watching... waiting... judging...",
+  "😾 You're really gonna make me wait? I'm getting hissy.",
+  "😹 Do you type with your paws or what? So slooow!",
+  "🐾 The keyboard is your litter box now. Use it!",
+];
+
+// Wait this long after the last keystroke before asking the AI, and skip
+// very short drafts, so the free OpenRouter quota isn't burned on every key.
+const REPLY_DELAY_MS = 2000;
+const MIN_LENGTH_FOR_REPLY = 8;
+
 const CatYapper = ({ text }: CatYapperProps) => {
-  const [CatTalks, setCatTalks] = useState("");
+  const [catTalks, setCatTalks] = useState(IDLE_LINES[0]);
   const [displayText, setDisplayText] = useState("");
+  const lastAskedRef = useRef("");
 
-  const getYap = async (text: string) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/let-cat-yap`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }),
-    });
+  const askCat = useMemo(
+    () =>
+      debounce(async (draft: string) => {
+        if (draft === lastAskedRef.current) return;
+        lastAskedRef.current = draft;
+        try {
+          const res = await fetch("/api/cat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: draft }),
+          });
+          const data = await res.json();
+          if (data.catYap) setCatTalks(data.catYap);
+        } catch (err) {
+          console.error("Cat request failed:", err);
+        }
+      }, REPLY_DELAY_MS),
+    []
+  );
 
-    const data = await res.json();
-    setCatTalks(data.catYap);
-  };
-
-  const debouncedYap = debounce((t: string) => {
-    getYap(t);
-  }, 1000);
+  useEffect(() => () => askCat.cancel(), [askCat]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
+    const draft = text.trim();
 
-    if (text.trim() === "") {
-      interval = setInterval(() => {
-        getYap("");
-      }, 5000);
-    } else {
-      debouncedYap(text);
+    if (draft === "") {
+      askCat.cancel();
+      lastAskedRef.current = "";
+      let i = 0;
+      const interval = setInterval(() => {
+        i = (i + 1) % IDLE_LINES.length;
+        setCatTalks(IDLE_LINES[i]);
+      }, 6000);
+      return () => clearInterval(interval);
     }
 
-    return () => {
-      if (interval) clearInterval(interval);
-      debouncedYap.cancel();
-    };
-  }, [debouncedYap, text]);
+    if (draft.length >= MIN_LENGTH_FOR_REPLY) askCat(draft);
+  }, [askCat, text]);
 
   useEffect(() => {
     let index = 0;
@@ -64,7 +84,7 @@ const CatYapper = ({ text }: CatYapperProps) => {
 
     const typeNewText = () => {
       // Split by character (not UTF-16 unit) so emojis like 🐾 stay whole.
-      const chars = Array.from(CatTalks);
+      const chars = Array.from(catTalks);
       index = 0;
       interval = setInterval(() => {
         if (index >= chars.length) {
@@ -80,7 +100,7 @@ const CatYapper = ({ text }: CatYapperProps) => {
     deleteThenType();
 
     return () => clearInterval(interval);
-  }, [CatTalks]);
+  }, [catTalks]);
 
   return (
     <div className="text-lg text-purple-500 italic font-bold tracking-wide mt-4 transition-all duration-300 font-tertiary max-w-xl mx-auto px-4 text-center whitespace-pre-wrap">

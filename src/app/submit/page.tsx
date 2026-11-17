@@ -1,11 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import Turnstile from "react-turnstile";
 import Form from "next/form";
-import { debounce } from "lodash";
 import Background from "@/components/background/Background";
 import { LinearGradient } from "react-text-gradients";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -34,71 +33,50 @@ export default function Submit() {
   const [from, setFrom] = useState("");
   const [selectedTrack, setSelectedTrack] = useState<OptionType | null>(null);
   const [captcha, setCaptcha] = useState("");
-  const [emotion, setEmotion] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleSubmit = async (e: any) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    if (submitting) return;
 
-    const emotionMap: Record<string, number> = {
-      Sadness: 0,
-      Joy: 1,
-      Love: 2,
-      Anger: 3,
-      Fear: 4,
-      Surprise: 5,
-    };
-
-    const formData = {
-      name,
-      message,
-      captcha,
-      track: selectedTrack ? selectedTrack.track.id : null,
-      from: from,
-      emotion:
-        emotion && emotionMap[emotion] !== undefined ? emotionMap[emotion] : 0,
-    };
-
-    console.log(JSON.stringify(formData));
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/submit-form`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-
-    window.location.href = `/view?id=${data.id}`;
-
-  };
-
-  const detectEmotion = async (text: string) => {
-    console.log("Detecting emotion for text:", text);
-    if (!text) {
-      setEmotion(null);
+    if (!name.trim() || !message.trim()) {
+      setSubmitError("Please fill in the recipient and the message.");
+      return;
+    }
+    if (!captcha) {
+      setSubmitError("Please complete the captcha check first.");
       return;
     }
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/predict-emotion`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text }), // Sending the current text for prediction
-    });
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          message,
+          from,
+          captcha,
+          track: selectedTrack ? selectedTrack.track.id : null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-    const data = await res.json();
-    setEmotion(data.predicted_emotion); // Set the detected emotion
+      if (!res.ok || !data.id) {
+        setSubmitError(data.error || "Couldn't share your story. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      window.location.href = `/view?id=${data.id}`;
+    } catch {
+      setSubmitError("Couldn't reach the server. Please try again.");
+      setSubmitting(false);
+    }
   };
-
-  const debouncedDetectEmotion = debounce(detectEmotion, 1000);
-
-  useEffect(() => {
-    debouncedDetectEmotion(message); // Call the debounced function
-  }, [debouncedDetectEmotion, message]);
 
   return (
     <>
@@ -132,15 +110,6 @@ export default function Submit() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
-            {emotion && (
-              <div className="mb-6 text-xl text-center font-semibold font-tertiary transition-all duration-500 ease-out">
-                <div className="inline-flex items-center justify-center gap-2 animate-pulse">
-                  <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">
-                    Detected Emotion: <span className="capitalize">{emotion}</span>
-                  </span>
-                </div>
-              </div>
-            )}
             <input
               id="from"
               name="from"
@@ -157,12 +126,19 @@ export default function Submit() {
               className="pb-5"
             />
 
+            {submitError && (
+              <p role="alert" className="mb-4 text-center text-sm text-red-400 font-tertiary">
+                {submitError}
+              </p>
+            )}
+
             <button
               type="submit"
               onClick={handleSubmit}
-              className="w-full p-3 font-tertiary rounded bg-gradient-to-r from-[#763AF5] to-[#A604F2] hover:from-[#a888f5] hover:to-[#b238f8] transition-colors duration-300"
+              disabled={submitting}
+              className="w-full p-3 font-tertiary rounded bg-gradient-to-r from-[#763AF5] to-[#A604F2] hover:from-[#a888f5] hover:to-[#b238f8] transition-colors duration-300 disabled:cursor-wait disabled:opacity-60"
             >
-              Share Your Story
+              {submitting ? "Sharing..." : "Share Your Story"}
               <i className="ml-3 fa-solid fa-shuttle-space"></i>
             </button>
           </Form>

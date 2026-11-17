@@ -6,7 +6,6 @@ import Card from "@/components/Card";
 import { Submission, SubmissionWithTrack, withTrackInfo } from "@/lib/tracks";
 
 const PAGE_SIZE = 12;
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Browse() {
   const [query, setQuery] = useState("");
@@ -40,7 +39,7 @@ export default function Browse() {
           pageItems = searchResults.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
         } else {
           const res = await fetch(
-            `${API_URL}/submissions?page=${page}&page_size=${PAGE_SIZE}`
+            `/api/submissions?page=${page}&page_size=${PAGE_SIZE}`
           );
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
@@ -78,7 +77,7 @@ export default function Browse() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/submissions/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
       setSearchResults(Array.isArray(data) ? data : []);
     } catch (err) {

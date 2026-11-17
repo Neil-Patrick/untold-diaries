@@ -103,20 +103,18 @@ export default function Submit() {
   return (
     <>
       <Background />
-      <div className="grid grid-cols-2 items-center justify-center min-h-full bg-transparent mt-10">
-        <div className="-mt-15 ml-50">
+      <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 lg:grid-cols-2 items-start gap-10 px-4 sm:px-8 pb-10 mt-4 lg:mt-10 bg-transparent">
+        <div className="order-2 lg:order-1 w-full">
           <Form
             action="/submit"
-            className="p-6 bg-[#ffffff08] w-180 h-200 rounded-3xl shadow text-white"
+            className="mx-auto w-full max-w-xl p-5 sm:p-8 bg-[#ffffff08] rounded-3xl shadow text-white"
           >
-            <h1 className="mt-15 mb-10 flex items-center justify-center text-4xl font-extrabold font-secondary">
+            <h1 className="mt-4 sm:mt-8 mb-10 flex items-center justify-center text-center text-3xl sm:text-4xl font-extrabold font-secondary">
               Let&apos;s Connect!
             </h1>
-            <div className="-mt-7 mb-15 text-center opacity-65">
+            <div className="-mt-7 mb-12 text-center opacity-65">
               Let&apos;s align our constellations! Reach out and let the magic of
-              sounds found their
-              <br />
-              way home!
+              sounds found their way home!
             </div>
             <input
               id="to"
@@ -170,24 +168,26 @@ export default function Submit() {
           </Form>
         </div>
 
-        <div className="">
-          <div className="flex items-center justify-center text-white">
-            <div className="-mt-200 font-black font-secondary text-7xl">
-              <LinearGradient gradient={["to right", "#4F24B4, #999999"]}>
-                Untold Diaries
-              </LinearGradient>
-            </div>
+        <div className="order-1 lg:order-2 flex flex-col items-center text-center text-white lg:sticky lg:top-10">
+          <div className="font-black font-secondary text-4xl sm:text-5xl xl:text-7xl">
+            <LinearGradient gradient={["to right", "#4F24B4, #999999"]}>
+              Untold Diaries
+            </LinearGradient>
           </div>
-          <div className="-mt-89 flex items-center justify-center text-center text-white font-secondary text-lg font-light">
+          <div className="mt-4 font-secondary text-base sm:text-lg font-light">
             Stay anonymous - No names. No judgements.
             <br />
             Just untold truths and stories.
           </div>
-          <div className="text-center mt-15">
+          <div className="mt-6 lg:mt-12 w-full">
             <CatYapper text={message} />
           </div>
-          <div className="mt-5">
-            <img src={gif.src} alt="Animated GIF" className="ml-57 -mb-80 w-120 h-120" />
+          <div className="mt-4">
+            <img
+              src={gif.src}
+              alt="Animated GIF"
+              className="w-48 sm:w-64 lg:w-96 xl:w-[30rem] h-auto"
+            />
           </div>
         </div>
       </div>

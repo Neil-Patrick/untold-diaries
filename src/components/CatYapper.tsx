@@ -56,17 +56,24 @@ const CatYapper = ({ text }: CatYapperProps) => {
             typeNewText();
             return "";
           }
-          return prev.slice(0, -1);
+          // Array.from splits by character, so emojis aren't cut in half.
+          return Array.from(prev).slice(0, -1).join("");
         });
       }, 30);
     };
 
     const typeNewText = () => {
+      // Split by character (not UTF-16 unit) so emojis like 🐾 stay whole.
+      const chars = Array.from(CatTalks);
       index = 0;
       interval = setInterval(() => {
-        setDisplayText((prev) => prev + CatTalks.charAt(index));
+        if (index >= chars.length) {
+          clearInterval(interval);
+          return;
+        }
+        const nextChar = chars[index];
         index++;
-        if (index >= CatTalks.length) clearInterval(interval);
+        setDisplayText((prev) => prev + nextChar);
       }, 50);
     };
 

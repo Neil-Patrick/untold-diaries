@@ -1,11 +1,10 @@
 import React from "react";
 import Link from 'next/link'
-import "@fortawesome/fontawesome-free/css/all.min.css"
 
 const Footer = () => {
   return (
-      <footer className="bg-[#0e0f16z] text-white px-6 pt-40 py-10 font-serif">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-10">
+      <footer className="mt-auto text-white px-6 pt-20 md:pt-40 py-10 font-serif">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
 
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-purple-400 mb-2">Untold Diaries.</h2>
@@ -21,42 +20,6 @@ const Footer = () => {
               <li><Link href="/" className="hover:text-purple-300">Home</Link></li>
               <li><Link href="/browse" className="hover:text-purple-300">Browse</Link></li>
               <li><Link href="/submit" className="hover:text-purple-300">Submit</Link></li>
-            </ul>
-          </div>
-
-          <div className="flex-1">
-            <h3 className="text-purple-400 text-lg font-semibold mb-2">Connect with us</h3>
-            <ul className="space-y-1">
-              <li className="flex items-center gap-2">
-                <a
-                  href="https://www.facebook.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-purple-300 flex items-center gap-2"
-                >
-                  <i className="fab fa-facebook"></i> Facebook
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <a
-                  href="https://www.tiktok.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-purple-300 flex items-center gap-2"
-                >
-                  <i className="fab fa-tiktok"></i> Tiktok
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <a
-                  href="https://www.instagram.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-purple-300 flex items-center gap-2"
-                >
-                  <i className="fab fa-instagram"></i> Instagram
-                </a>
-              </li>
             </ul>
           </div>
 

@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import Color from "color-thief-react";
 import ColorConvert from "color";
 import { motion, AnimatePresence } from "framer-motion";
+import { Music } from "lucide-react";
 
 interface CardProps {
   id: string;
   name?: string;
   message?: string;
   trackName?: string;
-  trackArtists?: string;
   trackImage?: string;
 }
 
@@ -17,12 +17,14 @@ const Card: React.FC<CardProps> = ({
   id,
   name = "Unknown",
   message = "-",
-  trackName = "Unknown Track",
-  trackArtists = "Unknown Artist",
+  trackName = "A song for you",
   trackImage,
 }) => {
+  const [imageFailed, setImageFailed] = useState(false);
+  const image = trackImage && !imageFailed ? trackImage : "";
+
   return (
-    <Color src={trackImage || ""} format="hex" crossOrigin="anonymous">
+    <Color src={image} format="hex" crossOrigin="anonymous">
       {({ data }) => {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const [hovered, setHovered] = useState(false);
@@ -36,15 +38,17 @@ const Card: React.FC<CardProps> = ({
 
         return (
           <div
-            className="flex flex-col border-2 w-[322px] h-[364px] bg-[#ffffff11] rounded-3xl shadow hover:bg-[#0a090911] transition-all overflow-hidden"
+            className="flex flex-col border-2 w-[min(322px,calc(100vw-2rem))] h-[364px] bg-[#ffffff11] rounded-3xl shadow hover:bg-[#0a090911] transition-all overflow-hidden"
             style={{ borderColor }}
           >
             <div
               className="w-full bg-center bg-cover bg-no-repeat flex flex-col"
               style={{
-                backgroundImage: hovered
-                  ? `url(${trackImage})` // no overlay on hover
-                  : `linear-gradient(${overlayColor}, ${overlayColor}), url(${trackImage})`,
+                backgroundImage: !image
+                  ? `linear-gradient(${overlayColor}, ${overlayColor})`
+                  : hovered
+                  ? `url(${image})` // no overlay on hover
+                  : `linear-gradient(${overlayColor}, ${overlayColor}), url(${image})`,
                 height: "80%",
               }}
               onMouseEnter={() => setHovered(true)}
@@ -111,11 +115,22 @@ const Card: React.FC<CardProps> = ({
                 borderColor: textColor
               }}
             >
-              <img
-                src={trackImage}
-                alt={trackName}
-                className="w-12 h-12 object-cover rounded-lg font-tertiary"
-              />
+              {image ? (
+                <img
+                  src={image}
+                  alt={trackName}
+                  className="w-12 h-12 shrink-0 object-cover rounded-lg font-tertiary"
+                  onError={() => setImageFailed(true)}
+                />
+              ) : (
+                <div
+                  className="w-12 h-12 shrink-0 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(255, 255, 255, 0.18)" }}
+                  aria-hidden="true"
+                >
+                  <Music size={22} color={textColor} />
+                </div>
+              )}
               <div className="flex flex-col justify-center mx-4 flex-grow overflow-hidden">
                 <h2
                   className="text-white text-lg font-semibold truncate font-tertiary"
@@ -123,9 +138,6 @@ const Card: React.FC<CardProps> = ({
                 >
                   {trackName}
                 </h2>
-                <p className="text-gray-300 text-sm truncate font-tertiary" style={{ color: textColor }}>
-                  {trackArtists}
-                </p>
               </div>
 
                 <img

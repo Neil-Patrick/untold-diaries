@@ -11,7 +11,8 @@ export async function GET(req: Request) {
   try {
     const results = await searchTracks(query);
     return NextResponse.json(results);
-  } catch {
+  } catch (error) {
+    console.error("Spotify search failed:", error);
     return NextResponse.json({ error: "Failed to search" }, { status: 500 });
   }
 }
